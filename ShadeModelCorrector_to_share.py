@@ -1,8 +1,15 @@
 #******************************************************************************************************
 
-# Name:         River shade adjustment tool - Part 1
+# Name:         River shade adjustment tool - part 1
 # Created:      1/25/2021
+# Updated:      2/26/2021
 # Author:       Julia Tatum
+#              
+# Summary:      This is the current-conditions shade adjustment tool referenced in the MS thesis
+#               "Lidar-based riparian forest assessment of the Nooksack River, Washington" by
+#               Julia Tatum, Western Washington University, Bellingham, Washington.
+#               For details on how to use this script, see the thesis report available at:
+#               https://cedar.wwu.edu
 #
 # Description:  For the inundated area of the river, this script determines which direction the shade
 #               is coming from, calculates the mean leaf area index for the bank casting the shadows,
@@ -13,7 +20,7 @@
 #               and shapefiles in the ErrorOutputs folder.  The files in the GoodOutputs folder should 
 #               be merged together into a single raster, with the "mean" option for the overlapping 
 #               areas. The ErrorOutputs file contains the sub-reaches that the script was unable to 
-#               processfor some reason (usually related to complex geometry, which is a problem in 
+#               process for some reason (usually related to complex geometry, which is a problem in 
 #               braided channel areas).  I would reccomend merging the GoodOutputs first, then filling in 
 #               any significant holes by hand (i.e. look at the leaf area index of the bank casting the 
 #               deepest shadows, use the equation given in this script to calculate the transmissivity 
@@ -44,6 +51,8 @@
 #               in line 123, you would change >>DSM_clipped = "DSM_clipped_to_river"<< to
 #               >>DSM_clipped = "DSM_clipped_to_river1"<<).  This will not affect any meaningful
 #               outputs of the script.
+#
+#               This script runs in Python 3.6 and requires an Esri Advanced license level.
 
 
 #***************************************************************************************************** 
@@ -70,7 +79,6 @@ RightNow = datetime.datetime.now()
 # Set the workspace environment to local file geodatabase
 # This contains the input files and will also contain intermediate outputs (which can be useful
 # for troubleshooting).
-#env.workspace = r"C:\ShadeModel_Jan14\GreatBigShadeModel\ShadeModelHome.gdb"
 env.workspace = r"C:\ShadeModel_Jan14\GreatBigShadeModel\GreatBigShadeModel.gdb"
 
 #*****************************************************************************************************
@@ -107,7 +115,7 @@ try:
         # River area centerlines (line)
         # (River area centerlines can be generated using the Polygon to Centerline (Topographic 
         # Production Tools) tool on the river area polygon).
-        # NOTE: this layer needs to have a "ScriptID" field with unique IDs
+        # NOTE: this layer must have a "ScriptID" field with unique IDs
         river_center = "RiverArea_Centerline_TEMP"
         print("river centerlines set")
 
@@ -266,7 +274,7 @@ try:
                         YSHAPED = "FALSE"
                         #Sometimes there can be a rare condition where the above operation splits the polygon into
                         #three parts instead of two (this only happens at the edges of the study area, because of
-                        #the study area limits not being at a right angle to the river.)
+                        #the study area boundaries not being at a right angle to the river.)
                         #If this happens, just delete the smallest scrap of bank - it wouldn't be relevant anyway
                         # because its buffer would be outside the study area.
                         foo_banks_length = int(arcpy.GetCount_management(foo_banks).getOutput(0))
@@ -472,7 +480,7 @@ try:
                         for row in cursor:
                                 print("RASTERVALU = {}".format(row[0]))
                                 if row[0] == -99:
-#!!!                                    # Export subreach_x to ErrorOutputs folder
+                                        # Export subreach_x to ErrorOutputs folder
                                         # Convert polygon to raster
                                         outputFile = (r"{}\subreachOutput{}.shp".format(ErrorOutputs, puppy))
                                         print(outputFile)
